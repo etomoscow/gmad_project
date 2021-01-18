@@ -57,7 +57,7 @@ if __name__ == '__main__':
         trues = [y for x in trues for y in x]
         predictions = [y for x in predictions for y in x]
         if args.save_results:
-            os.mkdir('../results', exist_ok=True)
+            os.makedirs('../results', exist_ok=True)
             results = pd.DataFrame(
                 {
                     'accuracy': balanced_accuracy_score(trues, predictions),
@@ -110,7 +110,7 @@ if __name__ == '__main__':
             recs.append(np.mean(precision_recall_fscore_support(trues, predictions, average='weighted')[1]))
             fs.append(np.mean(precision_recall_fscore_support(trues, predictions, average='weighted')[2]))
         if args.save_results:
-            os.mkdir('../results', exist_ok=True)
+            os.makedirs('../results', exist_ok=True)
             results = pd.DataFrame(
                 {
                     'accuracy': accs,
