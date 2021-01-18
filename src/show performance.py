@@ -101,7 +101,7 @@ if __name__ == '__main__':
             trues = [y for x in trues for y in x]
             predictions = [y for x in predictions for y in x]
             accs.append(balanced_accuracy_score(trues, predictions))
-            rocs.append(roc_auc_score(trues, predictions)),
+            rocs.append(roc_auc_score(trues, predictions))
             precs.append(precision_recall_fscore_support(trues, predictions)[0])
             recs.append(precision_recall_fscore_support(trues, predictions)[1])
             fs.append(precision_recall_fscore_support(trues, predictions)[2])
