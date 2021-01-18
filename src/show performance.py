@@ -1,9 +1,11 @@
 import argparse
+import os
 import sys
 
 sys.path.append('../')
 
 import pandas as pd
+import numpy as np
 import torch
 import torch.nn as nn
 from sklearn.metrics import (roc_auc_score,
@@ -18,7 +20,7 @@ parser.add_argument('--model_type', type=str, default='resnet18',
                     help='specify model to check performance (available: resnet18, resnet34, resnet50, all)')
 parser.add_argument('--batch_size', type=int, default=32,
                     help='specify batch_size (better to be the same as used for training (e.g. 32))')
-parser.add_argument('--save_results', type=bool, default=False,
+parser.add_argument('--save_results', type=bool, default=True,
                     help='if true creates dataframe containing results for the model (default False)')
 parser.add_argument('--show_metrics', type=bool, default=False,
                     help='if true shows metrics (default False)')
@@ -41,7 +43,8 @@ if __name__ == '__main__':
         model = mapping[args.model_type]
         num_ftrs = model.fc.in_features
         model.fc = nn.Linear(num_ftrs, 2)
-        model.load_state_dict(torch.load('../trained_models/' + args.model_type + '_best.pt', map_location=torch.device('cpu')))
+        model.load_state_dict(
+            torch.load('../trained_models/' + args.model_type + '_best.pt', map_location=torch.device('cpu')))
         model.to(device)
         trues, predictions = [], []
         with torch.no_grad():
@@ -54,19 +57,20 @@ if __name__ == '__main__':
         trues = [y for x in trues for y in x]
         predictions = [y for x in predictions for y in x]
         if args.save_results:
+            os.mkdir('../results', exist_ok=True)
             results = pd.DataFrame(
                 {
                     'accuracy': balanced_accuracy_score(trues, predictions),
-                    'ROC-AUC': roc_auc_score(trues, predictions),
-                    'precision': precision_recall_fscore_support(trues, predictions)[0],
-                    'recall': precision_recall_fscore_support(trues, predictions)[1],
-                    'f1-score': precision_recall_fscore_support(trues, predictions)[2]
+                    'ROC-AUC': roc_auc_score(trues, predictions, average='weighted'),
+                    'precision': np.mean(precision_recall_fscore_support(trues, predictions, average='weighted')[0]),
+                    'recall': np.mean(precision_recall_fscore_support(trues, predictions, average='weighted')[1]),
+                    'f1-score': np.mean(precision_recall_fscore_support(trues, predictions, average='weighted')[2])
                 },
                 index=args.model_type
             )
+            results.to_csv('../results/results.csv')
+        if args.show_results:
             print(results)
-            results.to_csv('../results.csv')
-
 
 
     else:
@@ -101,19 +105,22 @@ if __name__ == '__main__':
             trues = [y for x in trues for y in x]
             predictions = [y for x in predictions for y in x]
             accs.append(balanced_accuracy_score(trues, predictions))
-            rocs.append(roc_auc_score(trues, predictions))
-            precs.append(precision_recall_fscore_support(trues, predictions)[0])
-            recs.append(precision_recall_fscore_support(trues, predictions)[1])
-            fs.append(precision_recall_fscore_support(trues, predictions)[2])
-
-        results = pd.DataFrame(
-            {
-                'accuracy': accs,
-                'ROC-AUC': rocs,
-                'precision': precs,
-                'recall': recs,
-                'f1-score': fs
-            },
-            index=['resnet18', 'resnet34', 'resnet50']
-        )
-        results.to_csv('../results.csv')
+            rocs.append(roc_auc_score(trues, predictions, average='weighted'))
+            precs.append(np.mean(precision_recall_fscore_support(trues, predictions, average='weighted')[0]))
+            recs.append(np.mean(precision_recall_fscore_support(trues, predictions, average='weighted')[1]))
+            fs.append(np.mean(precision_recall_fscore_support(trues, predictions, average='weighted')[2]))
+        if args.save_results:
+            os.mkdir('../results', exist_ok=True)
+            results = pd.DataFrame(
+                {
+                    'accuracy': accs,
+                    'ROC-AUC': rocs,
+                    'precision': precs,
+                    'recall': recs,
+                    'f1-score': fs
+                },
+                index=['resnet18', 'resnet34', 'resnet50']
+            )
+            results.to_csv('../results.csv')
+        if args.show_results:
+            print(results)
