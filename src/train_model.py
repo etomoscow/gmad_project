@@ -4,6 +4,8 @@ import os
 import sys
 import time
 
+sys.path.append('../')
+
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -11,8 +13,6 @@ import torchvision
 
 from utils.prepare_dataset import load_data
 from utils.train_utils import train, evaluate, epoch_time
-
-sys.path.append('../')
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--batch_size', type=int, default=32,
