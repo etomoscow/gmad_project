@@ -1,0 +1,1 @@
+In order to keep repository clean, used dataset is uploaded to [dropbox](https://www.dropbox.com). In order to download the archive containing images proceed to [this link](https://www.dropbox.com/s/4gnp630blcre0za/images.rar?dl=0).
